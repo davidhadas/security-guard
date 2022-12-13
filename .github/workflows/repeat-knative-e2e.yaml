@@ -2,11 +2,12 @@ name: knative-e2e
 
 on:
   pull_request:
-    branches: [ 'main', 'release-*' ]
+    branches: [ 'main', 'release-*', 'e2e-knative' ]
     
 defaults:
   run:
     shell: bash
+
 
 jobs:
   kind:
