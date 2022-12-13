@@ -1,4 +1,4 @@
-name: repeat-knative-e2e
+name: knative-e2e
 
 on:
   pull_request:
