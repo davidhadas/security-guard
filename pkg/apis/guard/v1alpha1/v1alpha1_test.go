@@ -426,3 +426,41 @@ func TestDecideChild(t *testing.T) {
 	})
 
 }
+
+func TestAlertReport_DeepCopy(t *testing.T) {
+	type fields struct {
+		Time  int64
+		Level string
+		Count uint
+		Alert interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   *AlertReport
+	}{
+		{
+			name: "basic",
+			fields: fields{
+				Time:  7,
+				Level: "level",
+				Count: 42,
+				Alert: map[string]string{"aa": "11"},
+			},
+			want: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			i := &AlertReport{
+				Time:  tt.fields.Time,
+				Level: tt.fields.Level,
+				Count: tt.fields.Count,
+				Alert: tt.fields.Alert,
+			}
+			if got := i.DeepCopy(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("AlertReport.DeepCopy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -149,9 +149,8 @@ func (srv *gateClient) syncWithService(ticks int64) *spec.GuardianSpec {
 	}
 
 	syncReq.IamCompromised = srv.IamCompromised
-	syncReq.Alerts = srv.alerts
+	syncReq.Alerts = spec.AlertsToJson(srv.alerts)
 	syncReq.Pile = &srv.pile
-
 	// protect pile internals read/write
 	srv.pileMutex.Lock()
 	postBody, marshalErr := json.Marshal(syncReq)

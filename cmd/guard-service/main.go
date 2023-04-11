@@ -267,17 +267,13 @@ func (l *learner) processSync(w http.ResponseWriter, req *http.Request) {
 	// merge if needed, learn if needed and persist if needed
 	l.services.mergeAndLearnAndPersistGuardian(record, syncReq.Pile)
 	if syncReq.Pile != nil {
-		pi.Log.Debugf("Sync %s.%s pod %s Pile %d Alerts %d Compromised %t => mergeCounter %d learnCounter %d persistCounter %d", record.ns, record.sid, podname, syncReq.Pile.Count, len(syncReq.Alerts), syncReq.IamCompromised, record.pileMergeCounter, record.guardianLearnCounter, record.guardianPersistCounter)
+		pi.Log.Debugf("Sync %s.%s pod %s Pile %d Compromised %t => mergeCounter %d learnCounter %d persistCounter %d", record.ns, record.sid, podname, syncReq.Pile.Count, syncReq.IamCompromised, record.pileMergeCounter, record.guardianLearnCounter, record.guardianPersistCounter)
 	}
 
-	if syncReq.Alerts != nil {
-		pi.Log.Infof("Pod %s ns %s sent %d Alerts", podname, record.ns, len(syncReq.Alerts))
-		for _, alert := range syncReq.Alerts {
-			record.alerts++
-			time := time.Unix(alert.Time, 0)
-			pi.Log.Debugf("---- %d alerts since %02d:%02d:%02d %s -> %s", alert.Count, time.Hour(), time.Minute(), time.Second(), alert.Level, alert.Decision.String(""))
-		}
+	if len(syncReq.Alerts) > 0 {
+		l.services.addAlertReports(record, podname, syncReq.Alerts)
 	}
+
 	syncResp.Guardian = record.guardianSpec
 	record.recordMutex.Unlock()
 

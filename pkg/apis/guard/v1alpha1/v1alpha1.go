@@ -21,6 +21,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	deepcopy "github.com/barkimedes/go-deepcopy"
 )
 
 // A Profile describing the Value
@@ -44,14 +46,47 @@ type Alert struct {
 	Count    uint      `json:"count"`
 }
 
+type AlertReport struct {
+	Time  int64       `json:"time"`
+	Level string      `json:"level"`
+	Count uint        `json:"count"`
+	Alert interface{} `json:"alert"`
+}
+
+func (i *AlertReport) DeepCopy() *AlertReport {
+	o, err := deepcopy.Anything(i)
+	if err != nil {
+		fmt.Printf("Anything Fail %v", err)
+	}
+	return o.(*AlertReport)
+}
+
+type AlertReports struct {
+	Alerts    []AlertReport `json:"alerts"`
+	ServiceId string        `json:"servicename"`
+	PodName   string        `json:"podname"`
+	Namespace string        `json:"ns"`
+}
+
 type SyncMessageReq struct {
 	Pile           *SessionDataPile `json:"pile"`
-	Alerts         []Alert          `json:"alerts"`
+	Alerts         []AlertReport    `json:"alerts"`
 	IamCompromised bool             `json:"compromised"`
 }
 
 type SyncMessageResp struct {
 	Guardian *GuardianSpec `json:"guardian"`
+}
+
+func AlertsToJson(alerts []Alert) []AlertReport {
+	reports := make([]AlertReport, len(alerts))
+	for i, alert := range alerts {
+		reports[i].Count = alert.Count
+		reports[i].Level = alert.Level
+		reports[i].Time = alert.Time
+		reports[i].Alert = alert.Decision.ToJson()
+	}
+	return reports
 }
 
 func AddAlert(alerts []Alert, decision *Decision, level string) []Alert {
@@ -173,6 +208,19 @@ func (parent *Decision) SortedString(tag string) string {
 		return sb.String()
 	}
 	return ""
+}
+
+func (parent *Decision) ToJson() interface{} {
+	json := make(map[string]interface{})
+	if len(parent.Children) > 0 {
+		for tag, child := range parent.Children {
+			json["@"+tag] = child.ToJson()
+		}
+	}
+	if len(parent.Reasons) > 0 {
+		json["Reasons"] = parent.Reasons
+	}
+	return json
 }
 
 // A Pile accumulating information from zero or more Values

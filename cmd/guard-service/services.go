@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"sync"
 	"time"
 
@@ -56,8 +57,9 @@ type services struct {
 	cache              map[string]*serviceRecord     // the cache
 	namespaces         map[string]bool               // list of namespaces to watch for changes in ConfigMaps and CRDs
 	records            []*serviceRecord              // list of records to periodically process learn and store during tick()
+	alertReports       map[string]spec.AlertReports  // Queue alerts for delivery to Mgr
+	numQueuedAlerts    uint32                        // num Alerts queued
 	lastCreatedRecords time.Time                     // last time we created the records
-
 }
 
 // determine the cacheKey from its components
@@ -73,6 +75,7 @@ func newServices() *services {
 	s := new(services)
 	s.cache = make(map[string]*serviceRecord, 64)
 	s.namespaces = make(map[string]bool, 4)
+	s.alertReports = make(map[string]spec.AlertReports, 4)
 	s.kmgr = guardKubeMgr.NewKubeMgr()
 	return s
 }
@@ -125,6 +128,9 @@ func (s *services) flushTickerRecords() {
 func (s *services) tick() {
 	// Tick should not include any asynchronous work
 	// Move all asynchronous work (e.g. KubeApi work) to go routines
+
+	// update MGR with alerts
+	s.flushQueuedAlerts()
 
 	// try up to 100 records per tick to find one that can be persisted
 	numRecordsToProcess := len(s.records)
@@ -315,4 +321,56 @@ func (s *services) persistGuardian(record *serviceRecord) {
 
 func (s *services) deletePod(record *serviceRecord, podname string) {
 	s.kmgr.DeletePod(record.ns, podname)
+}
+
+func (s *services) updateMGR(reports []spec.AlertReports) {
+	_, err := json.Marshal(reports)
+	if err != nil {
+		pi.Log.Infof("Failed to Marshal MGR reports: %v", err)
+	} else {
+		pi.Log.Debugf("Update MGR with new alerts")
+
+	}
+
+}
+
+func (s *services) flushQueuedAlerts() {
+	if s.numQueuedAlerts == 0 {
+		return
+	}
+	s.mutex.Lock()
+	reports := make([]spec.AlertReports, s.numQueuedAlerts)
+	i := 0
+	for _, report := range s.alertReports {
+		reports[i] = report
+	}
+	s.alertReports = make(map[string]spec.AlertReports, 4)
+	s.numQueuedAlerts = 0
+	defer s.mutex.Unlock()
+	go s.updateMGR(reports)
+}
+
+func (s *services) addAlertReports(record *serviceRecord, podname string, alerts []spec.AlertReport) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	service := podname + "." + record.sid + "." + record.ns
+	reports, ok := s.alertReports[service]
+	if !ok {
+		var reports spec.AlertReports
+
+		reports.PodName = podname
+		reports.Namespace = record.ns
+		reports.ServiceId = record.sid
+		reports.Alerts = alerts
+		s.alertReports[service] = reports
+	} else {
+		reports.Alerts = append(reports.Alerts, alerts...)
+	}
+
+	for _, report := range alerts {
+		s.numQueuedAlerts++
+		record.alerts++
+		time := time.Unix(report.Time, 0)
+		pi.Log.Debugf("---- %d alerts since %02d:%02d:%02d %s -> %v", report.Count, time.Hour(), time.Minute(), time.Second(), report.Level, report.Alert)
+	}
 }

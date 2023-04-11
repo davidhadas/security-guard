@@ -3,6 +3,7 @@ module knative.dev/security-guard
 go 1.18
 
 require (
+	github.com/barkimedes/go-deepcopy v0.0.0-20220514131651-17c30cfc62df
 	github.com/emicklei/go-restful v2.9.5+incompatible
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/hashicorp/golang-lru v0.5.4

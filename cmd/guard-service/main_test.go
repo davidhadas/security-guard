@@ -527,7 +527,9 @@ func TestTLS_SyncHandler_WithGoodReq(t *testing.T) {
 	var syncReq spec.SyncMessageReq
 	var decision *spec.Decision
 	spec.DecideInner(&decision, 7, "problemFound")
-	syncReq.Alerts = spec.AddAlert(syncReq.Alerts, decision, "Session")
+
+	alerts := spec.AddAlert(nil, decision, "Session")
+	syncReq.Alerts = spec.AlertsToJson(alerts)
 
 	profile := &spec.SessionDataProfile{}
 	profile.Req.Method.ProfileString("Get")
@@ -584,7 +586,8 @@ func TestNOTLS_SyncHandler_WithGoodReq(t *testing.T) {
 	var syncReq spec.SyncMessageReq
 	var decision *spec.Decision
 	spec.DecideInner(&decision, 7, "problemFound")
-	syncReq.Alerts = spec.AddAlert(syncReq.Alerts, decision, "Session")
+	alerts := spec.AddAlert(nil, decision, "Session")
+	syncReq.Alerts = spec.AlertsToJson(alerts)
 
 	profile := &spec.SessionDataProfile{}
 	profile.Req.Method.ProfileString("Get")
@@ -642,7 +645,9 @@ func TestNOTLS_SyncHandler_WithBadQuery(t *testing.T) {
 	var syncReq spec.SyncMessageReq
 	var decision *spec.Decision
 	spec.DecideInner(&decision, 7, "problemFound")
-	syncReq.Alerts = spec.AddAlert(syncReq.Alerts, decision, "Session")
+
+	alerts := spec.AddAlert(nil, decision, "Session")
+	syncReq.Alerts = spec.AlertsToJson(alerts)
 
 	profile := &spec.SessionDataProfile{}
 	profile.Req.Method.ProfileString("Get")
