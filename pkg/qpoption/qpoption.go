@@ -42,8 +42,8 @@ var annotationsFilePath = sharedmain.PodInfoAnnotationsPath
 var qpOptionPrefix = "qpoption.knative.dev/"
 
 type GateQPOption struct {
-	config           map[string]string
-	activated        bool
+	Config           map[string]string
+	Activated        bool
 	defaults         *sharedmain.Defaults
 	securityPlug     pi.RoundTripPlug
 	nextRoundTripper http.RoundTripper // the next roundtripper
@@ -82,7 +82,7 @@ func (p *GateQPOption) ProcessAnnotations() bool {
 		return false
 	}
 	defer file.Close()
-	p.config = make(map[string]string)
+	p.Config = make(map[string]string)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -112,12 +112,12 @@ func (p *GateQPOption) ProcessAnnotations() bool {
 				switch action {
 				case "activate":
 					if strings.EqualFold(v, "enable") {
-						p.activated = true
+						p.Activated = true
 					}
 				case "config":
 					if len(keyParts) >= 3 {
 						extensionKey := strings.Join(keyParts[2:], "-")
-						p.config[extensionKey] = v
+						p.Config[extensionKey] = v
 					}
 				}
 			}
@@ -143,7 +143,7 @@ func (p *GateQPOption) ProcessAnnotations() bool {
 		}
 	}
 	if err == nil {
-		p.config["rootca"] = string(buf)
+		p.Config["rootca"] = string(buf)
 	}
 
 	return true
@@ -153,7 +153,7 @@ func (p *GateQPOption) Setup(defaults *sharedmain.Defaults) {
 	// Never panic the caller app from here
 	defer func() {
 		if r := recover(); r != nil {
-			p.activated = false
+			p.Activated = false
 			pi.Log.Warnf("Recovered from panic during Setup()! Recover: %v", r)
 		}
 	}()
@@ -178,19 +178,19 @@ func (p *GateQPOption) Setup(defaults *sharedmain.Defaults) {
 
 	// build p.config
 
-	if !p.ProcessAnnotations() || !p.activated {
+	if !p.ProcessAnnotations() || !p.Activated {
 		pi.Log.Debugf("No plug was activated")
 		return
 	}
 
-	pi.Log.Debugf("Activating %s version %s with config %v in pod %s namespace %s", p.securityPlug.PlugName(), p.securityPlug.PlugVersion(), p.config, serviceName, namespace)
+	pi.Log.Debugf("Activating %s version %s with config %v in pod %s namespace %s", p.securityPlug.PlugName(), p.securityPlug.PlugVersion(), p.Config, serviceName, namespace)
 
 	// setup context
 	if defaults.Ctx == nil {
 		pi.Log.Warnf("Received a nil context\n")
 		defaults.Ctx = context.Background()
 	}
-	defaults.Ctx = p.securityPlug.Init(defaults.Ctx, p.config, serviceName, namespace, defaults.Logger)
+	defaults.Ctx = p.securityPlug.Init(defaults.Ctx, p.Config, serviceName, namespace, defaults.Logger)
 
 	// setup transport
 	if defaults.Transport == nil {
@@ -208,7 +208,7 @@ func (p *GateQPOption) Shutdown() {
 		}
 		pi.Log.Sync()
 	}()
-	if p.activated {
+	if p.Activated {
 		p.securityPlug.Shutdown()
 	}
 }

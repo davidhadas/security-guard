@@ -72,6 +72,13 @@ func (hc *httpClient) ReadToken(audience string) (tokenActive bool) {
 	hc.token = string(b)
 	hc.missingToken = false
 	tokenActive = true
+<<<<<<< HEAD
+=======
+
+	pi.Log.Debugf("Refreshing client token - next refresh at %s", hc.tokenRefreshTime.String())
+	pi.Log.Infof("Token:%s", hc.token)
+
+>>>>>>> 43cc888 (initial)
 	return
 }
 

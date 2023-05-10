@@ -61,7 +61,7 @@ func (i *AlertReport) DeepCopy() *AlertReport {
 	return o.(*AlertReport)
 }
 
-type AlertReports struct {
+type ServiceReports struct {
 	Alerts    []AlertReport `json:"alerts"`
 	ServiceId string        `json:"servicename"`
 	PodName   string        `json:"podname"`
