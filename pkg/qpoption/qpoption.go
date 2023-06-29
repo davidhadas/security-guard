@@ -132,7 +132,7 @@ func (p *GateQPOption) ProcessAnnotations() bool {
 	buf, err = os.ReadFile(path.Join(queue.CertDirectory, certificates.CaCertName))
 	if err != nil {
 		if rootCA := os.Getenv("ROOT_CA"); rootCA != "" {
-			p.config["rootca"] = rootCA
+			p.Config["rootca"] = rootCA
 		} else {
 			// lets try the older secret names
 			pi.Log.Debugf("RootCa (%s) is missing", path.Join(queue.CertDirectory, certificates.CaCertName))

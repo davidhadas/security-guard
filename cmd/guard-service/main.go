@@ -31,7 +31,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/barkimedes/go-deepcopy"
 	"github.com/kelseyhightower/envconfig"
 	spec "knative.dev/security-guard/pkg/apis/guard/v1alpha1"
 	utils "knative.dev/security-guard/pkg/guard-utils"
@@ -367,15 +366,6 @@ func (l *learner) init() (srv *http.Server, quit chan bool, flushed chan bool) {
 
 func main() {
 	var err error
-	type my struct {
-		P interface{}
-		A int
-	}
-
-	x := my{A: 2, P: 55}
-	y, err := deepcopy.Anything(x)
-	fmt.Printf("x is %v \ty is %v\t err %v\n", x, y, err)
-
 	kill := make(chan os.Signal, 1)
 	// catch SIGETRM or SIGINTERRUPT
 	signal.Notify(kill, syscall.SIGTERM, syscall.SIGINT)
