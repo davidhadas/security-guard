@@ -200,8 +200,8 @@ func TestGateQPOption_ProcessConfigAnnotations(t *testing.T) {
 				t.Errorf("GateQPOption.ProcessAnnotations() gotResp = %v, wantResp %v", gotResp, tt.wantResp)
 				return
 			}
-			if !reflect.DeepEqual(p.Config, tt.config) {
-				t.Errorf("GateQPOption.ProcessAnnotations() = %v, want %v", p.Config, tt.config)
+			if !reflect.DeepEqual(p.config, tt.config) {
+				t.Errorf("GateQPOption.ProcessAnnotations() = %v, want %v", p.config, tt.config)
 			}
 		})
 	}
@@ -246,8 +246,8 @@ func TestGateQPOption_ProcessActivateAnnotations(t *testing.T) {
 				t.Errorf("GateQPOption.ProcessAnnotations() gotResp = %v, wantResp %v", gotResp, tt.wantResp)
 				return
 			}
-			if !reflect.DeepEqual(p.Activated, tt.activated) {
-				t.Errorf("GateQPOption.ProcessAnnotations() activated = %v, want %v", p.Activated, tt.activated)
+			if !reflect.DeepEqual(p.activated, tt.activated) {
+				t.Errorf("GateQPOption.ProcessAnnotations() activated = %v, want %v", p.activated, tt.activated)
 			}
 		})
 	}
@@ -265,8 +265,8 @@ func TestGateQPOption_ProcessNoAnnotations(t *testing.T) {
 			return
 		}
 		var config map[string]string
-		if !reflect.DeepEqual(p.Config, config) {
-			t.Errorf("GateQPOption.ProcessAnnotations() = %v, want %v", p.Config, config)
+		if !reflect.DeepEqual(p.config, config) {
+			t.Errorf("GateQPOption.ProcessAnnotations() = %v, want %v", p.config, config)
 		}
 	})
 }
@@ -279,8 +279,8 @@ func TestGateQPOption_Setup(t *testing.T) {
 		qpOptionPrefix = myQPOptionPrefix
 		p.Setup(defaults)
 		clearAnnotations()
-		if !reflect.DeepEqual(p.Activated, true) {
-			t.Errorf("GateQPOption.Setup() = %v, want %v", p.Activated, true)
+		if !reflect.DeepEqual(p.activated, true) {
+			t.Errorf("GateQPOption.Setup() = %v, want %v", p.activated, true)
 		}
 		if pi.Log == nil {
 			t.Errorf("GateQPOption.Setup() pi.Log is nil")
@@ -296,8 +296,8 @@ func TestGateQPOption_Setup(t *testing.T) {
 		qpOptionPrefix = myQPOptionPrefix
 		p.Setup(defaults2)
 		clearAnnotations()
-		if !reflect.DeepEqual(p.Activated, true) {
-			t.Errorf("GateQPOption.Setup() = %v, want %v", p.Activated, true)
+		if !reflect.DeepEqual(p.activated, true) {
+			t.Errorf("GateQPOption.Setup() = %v, want %v", p.activated, true)
 		}
 		if pi.Log == nil {
 			t.Errorf("GateQPOption.Setup() pi.Log is nil")
@@ -310,8 +310,8 @@ func TestGateQPOption_Setup(t *testing.T) {
 		p := initGate()
 		clearAnnotations()
 		p.Setup(defaults2)
-		if !reflect.DeepEqual(p.Activated, false) {
-			t.Errorf("GateQPOption.Setup() = %v, want %v", p.Activated, false)
+		if !reflect.DeepEqual(p.activated, false) {
+			t.Errorf("GateQPOption.Setup() = %v, want %v", p.activated, false)
 		}
 		if pi.Log == nil {
 			t.Errorf("GateQPOption.Setup() pi.Log is nil")

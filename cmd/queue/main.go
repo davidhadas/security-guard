@@ -28,7 +28,6 @@ import (
 // Knative Serving Queue Proxy with support for a guard-gate QPOption
 func main() {
 	qOpt := qpoption.NewGateQPOption()
-	qOpt.Activated = true
 	defer qOpt.Shutdown() // Shutdown guard (including a final sync)
 
 	if err := sharedmain.Main(qOpt.Setup); err != nil {
